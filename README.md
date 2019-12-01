@@ -111,8 +111,8 @@ and also:
 6. Final application should look like the example below:
 
 <div>
-  <img src="https://github.com/saltamay/UofT_BootCamp_EmployeeTracker/blob/master/assets/schema.png" alt="Database Schema Image" width:"324" height:"350" />
-  <img src="https://github.com/saltamay/UofT_BootCamp_EmployeeTracker/blob/master/assets/employee-tracker.gif" alt="Employe Tracker App Demo" width:"324" height:"350" />
+  <img src="https://github.com/saltamay/UofT_BootCamp_EmployeeTracker/blob/master/assets/schema.png" alt="Database Schema Image" width="400" height="300" />
+  <img src="https://github.com/saltamay/UofT_BootCamp_EmployeeTracker/blob/master/assets/employee-tracker.gif" alt="Employe Tracker App Demo" width="400" height="300" />
 </div>
 
 ## Getting Started
