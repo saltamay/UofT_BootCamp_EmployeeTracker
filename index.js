@@ -124,7 +124,7 @@ async function init() {
 
   switch (answer.action.toLowerCase()) {
     case 'add employee':
-      await getEmployeeInfo();
+      await addEmployeeInfo();
       init();
       break;
 
@@ -137,6 +137,23 @@ function getRoleID(employee) {
   return new Promise((resolve, reject) => {
     db.query(sqlQuery.selectRoleId(employee), (err, results, fields) => {
       if (err) {
+        reject(err);
+      } else {
+        resolve(results[0].id);
+      }
+    });
+  });
+}
+
+function getManagerID(employee) {
+  if (employee.manager === 'Not Assigned') {
+    return null;
+  }
+
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectEmployeeId(employee), (err, results, fields) => {
+      if (err) {
+        console.log(err);
         reject(err);
       } else {
         resolve(results[0].id);
@@ -158,16 +175,29 @@ function insertEmployee(employee) {
   })
 }
 
-async function getEmployeeInfo() {
+async function addEmployeeInfo() {
 
   // Get the list of all titles
-  const choices = [];
+  const titles = [];
 
   db.query(sqlQuery.selectAllFromRole(), (err, results, fields) => {
     if (err) throw err;
 
     for (const role of results) {
-      choices.push(role.title);
+      titles.push(role.title);
+    }
+  });
+
+  // Get the list of employees
+
+  const employees = ['Not Assigned'];
+
+  db.query(sqlQuery.selectAllFromEmployee(), (err, results, fields) => {
+    if (err) throw err;
+    for (const employee of results) {
+      const firstName = employee['first_name'];
+      const lastName = employee['last_name'];
+      employees.push(`${firstName} ${lastName}`);
     }
   });
 
@@ -188,11 +218,18 @@ async function getEmployeeInfo() {
           type: 'list',
           name: 'title',
           message: 'What is employee\'s role? ',
-          choices: choices
+          choices: titles
+        },
+        {
+          type: 'list',
+          name: 'manager',
+          message: 'Who is employee\'s manager ?',
+          choices: employees
         }
       ]);
 
     employee.roleID = await getRoleID(employee);
+    employee.managerID = await getManagerID(employee);
 
     await insertEmployee(employee);
 
