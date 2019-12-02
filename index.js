@@ -8,7 +8,8 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: 'xExV2Rv3gjc7XC',
-  database: 'employee_db'
+  database: 'employee_db',
+  multipleStatements: true
 });
 
 db.connect(function (err) {
@@ -39,6 +40,43 @@ function resetDB() {
 
   db.query(sqlQuery.createEmployeeTable(), err => {
     if (err) throw err
+  });
+}
+
+function initDB() {
+
+  db.query("INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?)", ['Sales', 'Legal', 'Finance', 'Engineering'],
+    err => {
+      if (err) throw err;
+    }
+  );
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Sales Lead', 100000, 1)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Salesperson', 80000, 1)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Lawyer', 190000, 2)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Legal Team Lead', 250000, 2)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Accountant', 125000, 3)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Software Engineer', 120000, 4)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Lead Software Engineer', 180000, 4)", err => {
+    if (err) throw err;
   });
 }
 
@@ -74,10 +112,11 @@ async function getEmployeeInfo() {
 
   init();
 }
-async function init() {
-  // Reset db
-  resetDB();
 
+async function init() {
+  // Reset and initialize the database
+  resetDB();
+  initDB();
   const answer = await inquirer
     .prompt([
       {
