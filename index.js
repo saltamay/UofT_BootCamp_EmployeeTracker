@@ -14,7 +14,6 @@ const db = mysql.createConnection({
 
 db.connect(function (err) {
   if (err) throw err;
-  console.log('Connected to the database');
 });
 
 function resetDB() {
@@ -80,49 +79,15 @@ function initDB() {
   });
 }
 
-async function getEmployeeInfo() {
-  const answer = await inquirer
-    .prompt([
-      {
-        type: 'input',
-        name: 'firstName',
-        message: 'What is the employee\'s first name? '
-      },
-      {
-        type: 'input',
-        name: 'lastName',
-        message: 'What is the employee\'s last name? '
-      },
-      // {
-      //   type: 'list',
-      //   name: 'department',
-      //   message: 'What do you want to do?',
-      //   choices: [
-      //     'View All Employees',
-      //     'View All Employees by Department',
-      //     'View All Employees by Manager',
-      //     'Add Employee',
-      //     'Remove Employee Role',
-      //     'Update Employee Manager'
-      //   ]
-      // }
-    ]);
-
-  console.log(answer);
-
-  init();
-}
-
 async function init() {
   // Reset and initialize the database
-  resetDB();
-  initDB();
+
   const answer = await inquirer
     .prompt([
       {
         type: 'list',
         name: 'action',
-        message: 'What do you want to do?',
+        message: 'What would you like to do?',
         choices: [
           'View All Employees',
           'View All Employees by Department',
@@ -136,7 +101,8 @@ async function init() {
 
   switch (answer.action.toLowerCase()) {
     case 'add employee':
-      getEmployeeInfo();
+      await getEmployeeInfo();
+      init();
       break;
 
     default:
@@ -144,6 +110,77 @@ async function init() {
   }
 }
 
+function getRoleID(employee) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectRoleId(employee), (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results[0].id);
+      }
+    });
+  });
+}
+
+function insertEmployee(employee) {
+  return new Promise((reject, resolve) => {
+    db.query(sqlQuery.insertIntoEmployee(employee), err => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log('Success');
+        resolve();
+      }
+    });
+  })
+}
+
+async function getEmployeeInfo() {
+
+  // Get the list of all titles
+  const choices = [];
+
+  db.query(sqlQuery.selectAllFromRole(), (err, results, fields) => {
+    if (err) throw err;
+
+    for (const role of results) {
+      choices.push(role.title);
+    }
+  });
+
+  try {
+    const employee = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'firstName',
+          message: 'What is the employee\'s first name? '
+        },
+        {
+          type: 'input',
+          name: 'lastName',
+          message: 'What is the employee\'s last name? '
+        },
+        {
+          type: 'list',
+          name: 'title',
+          message: 'What is employee\'s role? ',
+          choices: choices
+        }
+      ]);
+
+    employee.roleID = await getRoleID(employee);
+
+    await insertEmployee(employee);
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+
+resetDB();
+initDB();
 init();
 
 

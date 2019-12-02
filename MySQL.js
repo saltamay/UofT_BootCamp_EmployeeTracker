@@ -41,7 +41,20 @@ class MySQL {
       PRIMARY KEY(id),
       FOREIGN KEY(role_id) REFERENCES role(id),
       FOREIGN KEY(manager_id) REFERENCES employee(id)
-    );`
+    );`;
+  }
+
+  selectAllFromRole() {
+    return `SELECT * FROM role`;
+  }
+
+  selectRoleId(employee) {
+    return `SELECT id FROM role WHERE title="${employee.title}"`;
+  }
+
+  insertIntoEmployee(employee) {
+    return `INSERT INTO employee (first_name, last_name, role_id)
+      VALUES("${employee.firstName}", "${employee.lastName}", ${employee.roleID});`;
   }
 }
 
