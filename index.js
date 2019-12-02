@@ -44,12 +44,14 @@ function resetDB() {
 
 function initDB() {
 
+  // Seed database
   db.query("INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?)", ['Sales', 'Legal', 'Finance', 'Engineering'],
     err => {
       if (err) throw err;
     }
   );
 
+  // Seed role table
   db.query("INSERT INTO role (title, salary, department_id) VALUES ('Sales Lead', 100000, 1)", err => {
     if (err) throw err;
   });
@@ -75,6 +77,27 @@ function initDB() {
   });
 
   db.query("INSERT INTO role (title, salary, department_id) VALUES ('Lead Software Engineer', 180000, 4)", err => {
+    if (err) throw err;
+  });
+
+  // Seed employees to test the functionality
+  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Leanne', 'Graham', 4)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('Ervin', 'Howell', 3, 1)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Clementine', 'Bauch', 1)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('Patricia', 'Lebsack', 2, 3)", err => {
+    if (err) throw err;
+  });
+
+  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Chelsey', 'Dietrich', 5)", err => {
     if (err) throw err;
   });
 }
