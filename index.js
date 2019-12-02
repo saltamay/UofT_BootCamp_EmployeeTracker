@@ -1,6 +1,44 @@
 const cTable = require('console.table');
 const inquirer = require('inquirer');
 const mysql = require('mysql');
+const MySQL = require('./MySQL');
+const sqlQuery = new MySQL();
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'xExV2Rv3gjc7XC',
+  database: 'employee_db'
+});
+
+db.connect(function (err) {
+  if (err) throw err;
+  console.log('Connected to the database');
+});
+
+db.query(sqlQuery.dropEmployeeTable(), err => {
+  if (err) throw err
+});
+
+db.query(sqlQuery.dropRoleTable(), err => {
+  if (err) throw err
+});
+
+db.query(sqlQuery.dropDepartmentTable(), err => {
+  if (err) throw err
+});
+
+db.query(sqlQuery.createDepartmentTable(), err => {
+  if (err) throw err
+});
+
+db.query(sqlQuery.createRoleTable(), err => {
+  if (err) throw err
+});
+
+db.query(sqlQuery.createEmployeeTable(), err => {
+  if (err) throw err
+});
 
 inquirer
   .prompt([
