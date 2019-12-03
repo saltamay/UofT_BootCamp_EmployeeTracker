@@ -124,10 +124,13 @@ async function init() {
 
   switch (answer.action.toLowerCase()) {
     case 'add employee':
-      await addEmployeeInfo();
+      await addEmployee();
       init();
       break;
-
+    case 'view all employees':
+      await displayAllEmployees();
+      init();
+      break;
     default:
       break;
   }
@@ -163,7 +166,7 @@ function getManagerID(employee) {
 }
 
 function insertEmployee(employee) {
-  return new Promise((reject, resolve) => {
+  return new Promise((resolve, reject) => {
     db.query(sqlQuery.insertIntoEmployee(employee), err => {
       if (err) {
         reject(err);
@@ -175,7 +178,39 @@ function insertEmployee(employee) {
   })
 }
 
-async function addEmployeeInfo() {
+function getManagerByID(managerID) {
+  return new Promise((resolve, reject) => {
+    db.query(`SELECT * FROM employee WHERE id=${managerID}`, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        const manager = results[0]['first_name'] + " " + results[0]['last_name'];
+        resolve(manager);
+      }
+    });
+  })
+}
+
+function getAllEmployeeDetails() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT employee.id AS 'ID', first_name AS 'First Name', last_name AS 'Last Name', role.title AS 'Title', department.name AS 'Department', role.salary AS 'Salary', manager_id
+    FROM employee, role, department
+    WHERE employee.role_id=role.id
+      AND role.department_id=department.id
+    ORDER BY employee.id ASC`;
+    // const query = `SELECT first_name FROM employee`
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    })
+  })
+}
+
+async function addEmployee() {
 
   // Get the list of all titles
   const titles = [];
@@ -236,6 +271,30 @@ async function addEmployeeInfo() {
   } catch (err) {
     if (err) throw err;
   }
+}
+
+async function displayAllEmployees() {
+
+  try {
+    const employees = await getAllEmployeeDetails();
+
+    for (const employee of employees) {
+      if (employee['manager_id'] !== null) {
+        employee.Manager = await getManagerByID(employee['manager_id']);
+        delete employee['manager_id'];
+      } else {
+        employee.Manager = 'Not Assigned';
+        delete employee['manager_id'];
+      }
+    }
+
+    console.table(employees);
+  } catch (err) {
+    if (err) {
+      throw err;
+    }
+  }
+
 }
 
 
