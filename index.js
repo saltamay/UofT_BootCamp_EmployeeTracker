@@ -315,8 +315,19 @@ function getAllDepartments() {
         resolve(results);
       }
     });
-  })
+  });
+}
 
+function getAllRoles() {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectAllFromRole(), (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  });
 }
 
 function getAllEmployeesDetails() {
@@ -572,7 +583,13 @@ async function updateEmployeeManager() {
 }
 
 async function displayAllRoles() {
+  try {
+    const roles = await getAllRoles();
 
+    console.table(roles);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
 async function displayAllDepartments() {
