@@ -121,7 +121,6 @@ async function init() {
           'Remove Employee',
           'Update Employee Manager',
           'Update Employee Role',
-          'Update Employee Department',
           'Add Department',
           'Remove Department',
           'Add Role',
@@ -166,6 +165,14 @@ async function init() {
       break;
     case 'update employee role':
       await updateEmployeeRole();
+      init();
+      break;
+    case 'update employee department':
+      await updateEmployeeDepartment();
+      init();
+      break;
+    case 'add department':
+      await addDepartment();
       init();
       break;
     default:
@@ -228,6 +235,19 @@ function insertEmployee(employee) {
   });
 }
 
+function insertDepartment(departmentName) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.insertIntoDepartment(departmentName), err => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log('Success');
+        resolve();
+      }
+    });
+  });
+}
+
 function deleteEmployee(employeeName) {
   return new Promise((resolve, reject) => {
     db.query(sqlQuery.deleteFromEmployee(employeeName), err => {
@@ -266,6 +286,21 @@ function setEmployeeRole(employeeName, role) {
     const firstName = employeeName.split(' ')[0];
     const lastName = employeeName.split(' ')[1];
     const query = `UPDATE employee SET role_id=${role.id} WHERE first_name="${firstName}" AND last_name="${lastName}"`;
+    db.query(query, err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
+      }
+    });
+  });
+}
+
+function setEmployeeDepartment(employeeName, department) {
+  return new Promise((resolve, reject) => {
+    const firstName = employeeName.split(' ')[0];
+    const lastName = employeeName.split(' ')[1];
+    const query = `UPDATE employee SET id=${department.id} WHERE first_name="${firstName}" AND last_name="${lastName}"`;
     db.query(query, err => {
       if (err) {
         reject(err);
@@ -657,6 +692,25 @@ async function displayAllDepartments() {
     if (err) throw err;
   }
 }
+
+async function addDepartment() {
+  try {
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'What department would you like to add? '
+        }
+      ]);
+
+    await insertDepartment(department.name);
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
 
 resetDB();
 initDB();

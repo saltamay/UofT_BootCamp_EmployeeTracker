@@ -89,6 +89,10 @@ class MySQL {
     const lastName = employeeName.split(' ')[1];
     return `DELETE FROM employee WHERE first_name="${firstName}" AND last_name="${lastName}"`;
   }
+
+  insertIntoDepartment(departmentName) {
+    return `INSERT INTO department (name) VALUES ("${departmentName}")`;
+  }
 }
 
 module.exports = MySQL;
