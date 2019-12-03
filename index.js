@@ -116,7 +116,7 @@ async function init() {
           'View All Employees by Department',
           'View All Employees by Manager',
           'Add Employee',
-          'Remove Employee Role',
+          'Remove Employee',
           'Update Employee Manager'
         ]
       }
@@ -133,6 +133,14 @@ async function init() {
       break;
     case 'view all employees by department':
       await displayAllEmployeesByDepartment();
+      init();
+      break;
+    case 'remove employee':
+      await removeEmployee();
+      init();
+      break;
+    case 'update employee manager':
+      await updateEmployeeManager();
       init();
       break;
     default:
@@ -152,13 +160,13 @@ function getRoleID(employee) {
   });
 }
 
-function getManagerID(employee) {
-  if (employee.manager === 'None') {
+function getEmployeeID(employeeName) {
+  if (employeeName === 'None') {
     return null;
   }
 
   return new Promise((resolve, reject) => {
-    db.query(sqlQuery.selectEmployeeId(employee), (err, results, fields) => {
+    db.query(sqlQuery.selectEmployeeId(employeeName), (err, results, fields) => {
       if (err) {
         console.log(err);
         reject(err);
@@ -192,7 +200,40 @@ function insertEmployee(employee) {
         resolve();
       }
     });
+  });
+}
+
+function deleteEmployee(employee) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.deleteFromEmployee(employee), err => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log('Success');
+        resolve();
+      }
+    });
   })
+}
+
+function setEmployeeManager(employee, manager = null) {
+  return new Promise((resolve, reject) => {
+    const firstName = employee.split(' ')[0];
+    const lastName = employee.split(' ')[1];
+    let query = '';
+    if (manager) {
+      query = `UPDATE employee SET manager_id=${manager.id} WHERE first_name="${firstName}" AND last_name="${lastName}"`;
+    } else {
+      query = `UPDATE employee SET manager_id=null WHERE first_name="${firstName}" AND last_name="${lastName}"`;
+    }
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
+      }
+    });
+  });
 }
 
 function getManagerByID(managerID) {
@@ -206,6 +247,42 @@ function getManagerByID(managerID) {
       }
     });
   })
+}
+
+function getAllEmployees() {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectAllFromEmployee(), (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        const employees = [];
+        for (const employee of results) {
+          const firstName = employee['first_name'];
+          const lastName = employee['last_name'];
+          employees.push(`${firstName} ${lastName}`);
+        }
+        resolve(employees);
+      }
+    });
+  });
+}
+
+function getAllManagers() {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectAllManagers(), (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        const managers = [];
+        for (const manager of results) {
+          const firstName = manager['first_name'];
+          const lastName = manager['last_name'];
+          managers.push(`${firstName} ${lastName}`);
+        }
+        resolve(managers);
+      }
+    });
+  });
 }
 
 function getAllDepartments() {
@@ -225,7 +302,7 @@ function getAllDepartments() {
 
 }
 
-function getAllEmployees() {
+function getAllEmployeesDetails() {
   return new Promise((resolve, reject) => {
     const query = `SELECT employee.id AS 'ID', first_name AS 'First Name', last_name AS 'Last Name', role.title AS 'Title', department.name AS 'Department', role.salary AS 'Salary', manager_id
     FROM employee, role, department
@@ -275,17 +352,8 @@ async function addEmployee() {
   });
 
   // Get the list of employees
-
-  const employees = ['None'];
-
-  db.query(sqlQuery.selectAllFromEmployee(), (err, results, fields) => {
-    if (err) throw err;
-    for (const employee of results) {
-      const firstName = employee['first_name'];
-      const lastName = employee['last_name'];
-      employees.push(`${firstName} ${lastName}`);
-    }
-  });
+  const employees = await getAllEmployees();
+  employees.unshift('None');
 
   try {
     const employee = await inquirer
@@ -315,7 +383,7 @@ async function addEmployee() {
       ]);
 
     employee.roleID = await getRoleID(employee);
-    employee.managerID = await getManagerID(employee);
+    employee.managerID = await getEmployeeID(employee.manager);
 
     await insertEmployee(employee);
 
@@ -324,9 +392,39 @@ async function addEmployee() {
   }
 }
 
+// async function removeEmployee() {
+
+//   // Get the list of employees
+//   const employees = await getAllEmployees();
+
+//   try {
+//     const employee = await inquirer
+//       .prompt([
+//         {
+//           type: 'list',
+//           name: 'name',
+//           message: 'Which employee would you like to remove ?',
+//           choices: employees
+//         }
+//       ]);
+
+//     const managerID = await getManagerByID(employee);
+
+//     if (!managerID) {
+//       await deleteEmployee(employee);
+//     } else {
+//       await updateEmployeeManager(employee);
+//       await deleteEmployee(employee);
+//     }
+
+//   } catch (err) {
+//     if (err) throw err;
+//   }
+// }
+
 async function displayAllEmployees() {
   try {
-    const employees = await getAllEmployees();
+    const employees = await getAllEmployeesDetails();
 
     for (const employee of employees) {
       if (employee['manager_id'] !== null) {
@@ -364,6 +462,43 @@ async function displayAllEmployeesByDepartment() {
     const employees = await getAllEmployeesByDepartment(departmentID);
 
     console.table(employees);
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+async function updateEmployeeManager() {
+
+  try {
+    // Get the list of employees
+    let employees = await getAllEmployees();
+
+    let employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee: ',
+          choices: employees
+        }
+      ]);
+
+    employee = employee.name;
+    employees = employees.filter(el => el !== employee)
+
+    const manager = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee to assign as an manager: ',
+          choices: employees
+        }
+      ]);
+
+    manager.id = await getEmployeeID(manager.name);
+
+    await setEmployeeManager(employee, manager);
   } catch (err) {
     if (err) throw err;
   }

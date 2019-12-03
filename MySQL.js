@@ -40,7 +40,7 @@ class MySQL {
       manager_id INT,
       PRIMARY KEY(id),
       FOREIGN KEY(role_id) REFERENCES role(id),
-      FOREIGN KEY(manager_id) REFERENCES employee(id)
+      FOREIGN KEY(manager_id) REFERENCES employee(id) 
     );`;
   }
 
@@ -52,6 +52,10 @@ class MySQL {
     return `SELECT * FROM employee`;
   }
 
+  selectAllManagers() {
+    return `SELECT * FROM employee employee, employee manager WHERE employee.manager_id=manager.id`;
+  }
+
   selectAllFromDepartment() {
     return `SELECT * FROM department`;
   }
@@ -60,9 +64,9 @@ class MySQL {
     return `SELECT id FROM role WHERE title="${employee.title}"`;
   }
 
-  selectEmployeeId(employee) {
-    const firstName = employee.manager.split(' ')[0];
-    const lastName = employee.manager.split(' ')[1];
+  selectEmployeeId(employeeName) {
+    const firstName = employeeName.split(' ')[0];
+    const lastName = employeeName.split(' ')[1];
     return `SELECT id FROM employee WHERE first_name="${firstName}" AND last_name="${lastName}"`;
   }
 
@@ -74,6 +78,12 @@ class MySQL {
       return `INSERT INTO employee (first_name, last_name, role_id)
       VALUES("${employee.firstName}", "${employee.lastName}", ${employee.roleID});`;
     }
+  }
+
+  deleteFromEmployee(employee) {
+    const firstName = employee.name.split(' ')[0];
+    const lastName = employee.name.split(' ')[1];
+    return `DELETE FROM employee WHERE first_name="${firstName}" AND last_name="${lastName}"`;
   }
 }
 
