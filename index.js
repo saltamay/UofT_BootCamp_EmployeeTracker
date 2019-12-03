@@ -135,6 +135,10 @@ async function init() {
       await displayAllEmployeesByDepartment();
       init();
       break;
+    case 'view all employees by manager':
+      await displayAllEmployeesByManager();
+      init();
+      break;
     case 'remove employee':
       await removeEmployee();
       init();
@@ -340,7 +344,9 @@ function getAllEmployeesByDepartment(departmentID) {
 
 function getAllEmployeesByManager(managerID) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM employee WHERE employee.manager_id="${managerID}" ORDER BY employee.first_name ASC`;
+    const query = `SELECT id AS 'ID', first_name AS 'First Name', last_name AS 'Last Name'
+    FROM employee WHERE employee.manager_id="${managerID}" 
+    ORDER BY employee.first_name ASC`;
     db.query(query, (err, results, fields) => {
       if (err) {
         console.log(err);
@@ -484,6 +490,30 @@ async function displayAllEmployeesByDepartment() {
     console.table(employees);
   } catch (err) {
     if (err) throw err;
+  }
+}
+
+async function displayAllEmployeesByManager() {
+  try {
+    const managers = await getAllManagers();
+    const manager = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select a department ?',
+          choices: managers
+        }
+      ]);
+
+    const managerID = await getEmployeeID(manager.name);
+
+    const employeesManaged = await getAllEmployeesByManager(managerID);
+
+    console.table(employeesManaged);
+
+  } catch (error) {
+
   }
 }
 
