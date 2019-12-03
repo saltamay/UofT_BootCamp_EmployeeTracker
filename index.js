@@ -164,14 +164,18 @@ async function init() {
       await updateEmployeeManager();
       init();
       break;
+    case 'update employee role':
+      await updateEmployeeRole();
+      init();
+      break;
     default:
       break;
   }
 }
 
-function getRoleID(employee) {
+function getRoleID(title) {
   return new Promise((resolve, reject) => {
-    db.query(sqlQuery.selectRoleId(employee), (err, results, fields) => {
+    db.query(sqlQuery.selectRoleId(title), (err, results, fields) => {
       if (err) {
         reject(err);
       } else {
@@ -248,6 +252,21 @@ function setEmployeeManager(employee, manager = null) {
       query = `UPDATE employee SET manager_id=null WHERE first_name="${firstName}" AND last_name="${lastName}"`;
     }
     db.query(query, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
+      }
+    });
+  });
+}
+
+function setEmployeeRole(employeeName, role) {
+  return new Promise((resolve, reject) => {
+    const firstName = employeeName.split(' ')[0];
+    const lastName = employeeName.split(' ')[1];
+    const query = `UPDATE employee SET role_id=${role.id} WHERE first_name="${firstName}" AND last_name="${lastName}"`;
+    db.query(query, err => {
       if (err) {
         reject(err);
       } else {
@@ -391,7 +410,7 @@ async function addEmployee() {
     if (err) throw err;
 
     for (const role of results) {
-      titles.push(role.title);
+      titles.push(role.Title);
     }
   });
 
@@ -426,7 +445,7 @@ async function addEmployee() {
         }
       ]);
 
-    employee.roleID = await getRoleID(employee);
+    employee.roleID = await getRoleID(employee.title);
     employee.managerID = await getEmployeeID(employee.manager);
 
     await insertEmployee(employee);
@@ -546,7 +565,6 @@ async function displayAllEmployeesByManager() {
 }
 
 async function updateEmployeeManager() {
-
   try {
     // Get the list of employees
     let employees = await getAllEmployees();
@@ -577,6 +595,44 @@ async function updateEmployeeManager() {
     manager.id = await getEmployeeID(manager.name);
 
     await setEmployeeManager(employee, manager);
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+async function updateEmployeeRole() {
+  try {
+    // Get the list of employees
+    let employees = await getAllEmployees();
+
+    let employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee: ',
+          choices: employees
+        }
+      ]);
+
+    const roles = await getAllRoles();
+    let roleTitles = [];
+    for (const role of roles) {
+      roleTitles.push(role.Title);
+    }
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'title',
+          message: 'Please select an employee to assign as an manager: ',
+          choices: roleTitles
+        }
+      ]);
+
+    role.id = await getRoleID(role.title);
+
+    await setEmployeeRole(employee.name, role);
   } catch (err) {
     if (err) throw err;
   }

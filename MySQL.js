@@ -64,8 +64,8 @@ class MySQL {
     return `SELECT id AS 'ID', title AS 'Title', salary AS 'Salary' FROM role`;
   }
 
-  selectRoleId(employee) {
-    return `SELECT id FROM role WHERE title="${employee.title}"`;
+  selectRoleId(title) {
+    return `SELECT id FROM role WHERE title="${title}"`;
   }
 
   selectEmployeeId(employeeName) {
