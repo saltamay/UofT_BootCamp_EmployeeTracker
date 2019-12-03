@@ -203,9 +203,9 @@ function insertEmployee(employee) {
   });
 }
 
-function deleteEmployee(employee) {
+function deleteEmployee(employeeName) {
   return new Promise((resolve, reject) => {
-    db.query(sqlQuery.deleteFromEmployee(employee), err => {
+    db.query(sqlQuery.deleteFromEmployee(employeeName), err => {
       if (err) {
         reject(err);
       } else {
@@ -334,8 +334,22 @@ function getAllEmployeesByDepartment(departmentID) {
       } else {
         resolve(results);
       }
-    })
+    });
   });
+}
+
+function getAllEmployeesByManager(managerID) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM employee WHERE employee.manager_id="${managerID}" ORDER BY employee.first_name ASC`;
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  })
 }
 
 async function addEmployee() {
@@ -392,35 +406,41 @@ async function addEmployee() {
   }
 }
 
-// async function removeEmployee() {
+async function removeEmployee() {
 
-//   // Get the list of employees
-//   const employees = await getAllEmployees();
+  // Get the list of employees
+  const employees = await getAllEmployees();
 
-//   try {
-//     const employee = await inquirer
-//       .prompt([
-//         {
-//           type: 'list',
-//           name: 'name',
-//           message: 'Which employee would you like to remove ?',
-//           choices: employees
-//         }
-//       ]);
+  try {
+    const employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Which employee would you like to remove ?',
+          choices: employees
+        }
+      ]);
 
-//     const managerID = await getManagerByID(employee);
+    const managers = await getAllManagers();
 
-//     if (!managerID) {
-//       await deleteEmployee(employee);
-//     } else {
-//       await updateEmployeeManager(employee);
-//       await deleteEmployee(employee);
-//     }
+    if (managers.includes(employee.name)) {
+      const managerID = await getEmployeeID(employee.name);
+      const employeesManaged = await getAllEmployeesByManager(managerID);
 
-//   } catch (err) {
-//     if (err) throw err;
-//   }
-// }
+      for (let employeeManaged of employeesManaged) {
+        employeeManaged = employeeManaged['first_name'] + " " + employeeManaged['last_name'];
+        setEmployeeManager(employeeManaged);
+      }
+      deleteEmployee(employee.name);
+    } else {
+      deleteEmployee(employee.name);
+    }
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
 
 async function displayAllEmployees() {
   try {
@@ -447,7 +467,7 @@ async function displayAllEmployees() {
 async function displayAllEmployeesByDepartment() {
   try {
     const departments = await getAllDepartments();
-    const departmentSelected = await inquirer
+    const department = await inquirer
       .prompt([
         {
           type: 'list',
@@ -457,7 +477,7 @@ async function displayAllEmployeesByDepartment() {
         }
       ]);
 
-    const departmentID = await getDepartmentID(departmentSelected.name);
+    const departmentID = await getDepartmentID(department.name);
 
     const employees = await getAllEmployeesByDepartment(departmentID);
 

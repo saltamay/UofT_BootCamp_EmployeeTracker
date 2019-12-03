@@ -80,9 +80,9 @@ class MySQL {
     }
   }
 
-  deleteFromEmployee(employee) {
-    const firstName = employee.name.split(' ')[0];
-    const lastName = employee.name.split(' ')[1];
+  deleteFromEmployee(employeeName) {
+    const firstName = employeeName.split(' ')[0];
+    const lastName = employeeName.split(' ')[1];
     return `DELETE FROM employee WHERE first_name="${firstName}" AND last_name="${lastName}"`;
   }
 }
