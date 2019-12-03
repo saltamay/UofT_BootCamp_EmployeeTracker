@@ -131,6 +131,10 @@ async function init() {
       await displayAllEmployees();
       init();
       break;
+    case 'view all employees by department':
+      await displayAllEmployeesByDepartment();
+      init();
+      break;
     default:
       break;
   }
@@ -149,7 +153,7 @@ function getRoleID(employee) {
 }
 
 function getManagerID(employee) {
-  if (employee.manager === 'Not Assigned') {
+  if (employee.manager === 'None') {
     return null;
   }
 
@@ -163,6 +167,19 @@ function getManagerID(employee) {
       }
     });
   });
+}
+
+function getDepartmentID(departmentName) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT id FROM department WHERE name="${departmentName}"`
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results[0].id);
+      }
+    })
+  })
 }
 
 function insertEmployee(employee) {
@@ -191,7 +208,24 @@ function getManagerByID(managerID) {
   })
 }
 
-function getAllEmployeeDetails() {
+function getAllDepartments() {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.selectAllFromDepartment(), (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        const departments = [];
+        for (const department of results) {
+          departments.push(department.name);
+        }
+        resolve(departments);
+      }
+    });
+  })
+
+}
+
+function getAllEmployees() {
   return new Promise((resolve, reject) => {
     const query = `SELECT employee.id AS 'ID', first_name AS 'First Name', last_name AS 'Last Name', role.title AS 'Title', department.name AS 'Department', role.salary AS 'Salary', manager_id
     FROM employee, role, department
@@ -210,6 +244,23 @@ function getAllEmployeeDetails() {
   })
 }
 
+function getAllEmployeesByDepartment(departmentID) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT employee.id AS 'ID', first_name AS 'First Name', last_name AS 'Last Name'
+    FROM employee
+    WHERE employee.role_id = ANY (SELECT role.id FROM role WHERE role.department_id="${departmentID}")
+    ORDER BY employee.id ASC`;
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    })
+  });
+}
+
 async function addEmployee() {
 
   // Get the list of all titles
@@ -225,7 +276,7 @@ async function addEmployee() {
 
   // Get the list of employees
 
-  const employees = ['Not Assigned'];
+  const employees = ['None'];
 
   db.query(sqlQuery.selectAllFromEmployee(), (err, results, fields) => {
     if (err) throw err;
@@ -274,16 +325,15 @@ async function addEmployee() {
 }
 
 async function displayAllEmployees() {
-
   try {
-    const employees = await getAllEmployeeDetails();
+    const employees = await getAllEmployees();
 
     for (const employee of employees) {
       if (employee['manager_id'] !== null) {
         employee.Manager = await getManagerByID(employee['manager_id']);
         delete employee['manager_id'];
       } else {
-        employee.Manager = 'Not Assigned';
+        employee.Manager = 'None';
         delete employee['manager_id'];
       }
     }
@@ -294,7 +344,29 @@ async function displayAllEmployees() {
       throw err;
     }
   }
+}
 
+async function displayAllEmployeesByDepartment() {
+  try {
+    const departments = await getAllDepartments();
+    const departmentSelected = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select a department ?',
+          choices: departments
+        }
+      ]);
+
+    const departmentID = await getDepartmentID(departmentSelected.name);
+
+    const employees = await getAllEmployeesByDepartment(departmentID);
+
+    console.table(employees);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
 

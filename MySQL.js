@@ -52,6 +52,10 @@ class MySQL {
     return `SELECT * FROM employee`;
   }
 
+  selectAllFromDepartment() {
+    return `SELECT * FROM department`;
+  }
+
   selectRoleId(employee) {
     return `SELECT id FROM role WHERE title="${employee.title}"`;
   }
