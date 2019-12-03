@@ -175,6 +175,10 @@ async function init() {
       await addDepartment();
       init();
       break;
+    case 'remove department':
+      await removeDepartment();
+      init();
+      break;
     default:
       break;
   }
@@ -258,7 +262,20 @@ function deleteEmployee(employeeName) {
         resolve();
       }
     });
-  })
+  });
+}
+
+function deleteDepartment(departmentName) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.deleteFromDepartment(departmentName), err => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log('Success');
+        resolve();
+      }
+    });
+  });
 }
 
 function setEmployeeManager(employee, manager = null) {
@@ -711,6 +728,31 @@ async function addDepartment() {
   }
 }
 
+async function removeDepartment() {
+  try {
+    const departments = await getAllDepartments();
+
+    let departmentNames = [];
+    for (const department of departments) {
+      departmentNames.push(department.Name);
+    }
+
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Which department would you like to remove? ',
+          choices: departmentNames
+        }
+      ]);
+
+    await deleteDepartment(department.name);
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
 
 resetDB();
 initDB();

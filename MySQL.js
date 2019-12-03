@@ -93,6 +93,10 @@ class MySQL {
   insertIntoDepartment(departmentName) {
     return `INSERT INTO department (name) VALUES ("${departmentName}")`;
   }
+
+  deleteFromDepartment(departmentName) {
+    return `DELETE FROM department WHERE name="${departmentName}"`;
+  }
 }
 
 module.exports = MySQL;
