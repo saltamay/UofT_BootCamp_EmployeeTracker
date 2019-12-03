@@ -115,18 +115,23 @@ async function init() {
           'View All Employees',
           'View All Employees by Department',
           'View All Employees by Manager',
+          'View All Roles',
+          'View All Departments',
           'Add Employee',
           'Remove Employee',
-          'Update Employee Manager'
+          'Update Employee Manager',
+          'Update Employee Role',
+          'Update Employee Department',
+          'Add Department',
+          'Remove Department',
+          'Add Role',
+          'Remove Role',
+          'View Total Budget'
         ]
       }
     ]);
 
   switch (answer.action.toLowerCase()) {
-    case 'add employee':
-      await addEmployee();
-      init();
-      break;
     case 'view all employees':
       await displayAllEmployees();
       init();
@@ -137,6 +142,18 @@ async function init() {
       break;
     case 'view all employees by manager':
       await displayAllEmployeesByManager();
+      init();
+      break;
+    case 'view all roles':
+      await displayAllRoles();
+      init();
+      break;
+    case 'view all departments':
+      await displayAllDepartments();
+      init();
+      break;
+    case 'add employee':
+      await addEmployee();
       init();
       break;
     case 'remove employee':
@@ -295,11 +312,7 @@ function getAllDepartments() {
       if (err) {
         reject(err);
       } else {
-        const departments = [];
-        for (const department of results) {
-          departments.push(department.name);
-        }
-        resolve(departments);
+        resolve(results);
       }
     });
   })
@@ -472,7 +485,11 @@ async function displayAllEmployees() {
 
 async function displayAllEmployeesByDepartment() {
   try {
-    const departments = await getAllDepartments();
+    const results = await getAllDepartments();
+    const departments = [];
+    for (const department of results) {
+      departments.push(department.Name);
+    }
     const department = await inquirer
       .prompt([
         {
@@ -554,6 +571,19 @@ async function updateEmployeeManager() {
   }
 }
 
+async function displayAllRoles() {
+
+}
+
+async function displayAllDepartments() {
+  try {
+    const departments = await getAllDepartments();
+
+    console.table(departments);
+  } catch (err) {
+    if (err) throw err;
+  }
+}
 
 resetDB();
 initDB();

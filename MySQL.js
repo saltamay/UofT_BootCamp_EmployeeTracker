@@ -57,7 +57,7 @@ class MySQL {
   }
 
   selectAllFromDepartment() {
-    return `SELECT * FROM department`;
+    return `SELECT id AS 'ID', name AS 'Name' FROM department`;
   }
 
   selectRoleId(employee) {
