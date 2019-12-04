@@ -126,7 +126,8 @@ async function init() {
           'Remove Department',
           'Add Role',
           'Remove Role',
-          'View Total Budget'
+          'View Total Budget',
+          'View Total Department Budget'
         ]
       }
     ]);
@@ -190,6 +191,10 @@ async function init() {
       break;
     case 'view total budget':
       await displayTotalBudget();
+      init();
+      break;
+    case 'view total department budget':
+      await displayTotalDepartmentBudget();
       init();
       break;
     default:
@@ -500,6 +505,22 @@ function getTotalBudget() {
       }
     })
   })
+}
+
+function getTotalBudgetByDepartment(departmentID) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT SUM(salary) AS 'Total Department Budget'
+    FROM employee
+    LEFT JOIN role ON employee.role_id=role.id
+    WHERE role.department_id=${departmentID}`
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  });
 }
 
 async function addEmployee() {
@@ -870,11 +891,47 @@ async function removeRole() {
 async function displayTotalBudget() {
   try {
     const totalBudget = await getTotalBudget();
-    totalBudget[0]['Total Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalBudget[0]['Total Budget'])
+    totalBudget[0]['Total Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalBudget[0]['Total Budget']);
     console.log('');
     console.table(totalBudget);
   } catch (err) {
     if (err) throw err;
+  }
+}
+
+async function displayTotalDepartmentBudget() {
+  try {
+    const departments = await getAllDepartments();
+
+    let departmentNames = [];
+    for (const department of departments) {
+      departmentNames.push(department.Name);
+    }
+
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Which department\'s budget would you like to see? ',
+          choices: departmentNames
+        }
+      ]);
+
+    const departmentID = await getDepartmentID(department.name);
+
+    const totalDepartmentBudget = await getTotalBudgetByDepartment(departmentID);
+
+    if (totalDepartmentBudget[0]['Total Department Budget']) {
+      totalDepartmentBudget[0]['Total Department Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalDepartmentBudget[0]['Total Department Budget']);
+    } else {
+      totalDepartmentBudget[0]['Total Department Budget'] = 0;
+      totalDepartmentBudget[0]['Total Department Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalBudget[0]['Total Department Budget']);
+    }
+    console.log('');
+    console.table(totalDepartmentBudget);
+  } catch (error) {
+
   }
 }
 
