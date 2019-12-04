@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql');
 const MySQL = require('./MySQL');
 const sqlQuery = new MySQL();
+var figlet = require('figlet');
 
 const db = mysql.createConnection({
   host: 'localhost',
@@ -103,9 +104,24 @@ function initDB() {
   });
 }
 
-async function init() {
-  // Reset and initialize the database
+function displayBanner() {
+  return new Promise((resolve, reject) => {
+    figlet('Employee Manager', {
+      horizontalLayout: 'default',
+      verticalLayout: 'default'
+    }, function (err, data) {
+      if (err) {
+        console.log('Something went wrong...');
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
 
+async function app() {
+  // Reset and initialize the database
   const answer = await inquirer
     .prompt([
       {
@@ -136,67 +152,67 @@ async function init() {
   switch (answer.action.toLowerCase()) {
     case 'view all employees':
       await displayAllEmployees();
-      init();
+      app();
       break;
     case 'view all employees by department':
       await displayAllEmployeesByDepartment();
-      init();
+      app();
       break;
     case 'view all employees by manager':
       await displayAllEmployeesByManager();
-      init();
+      app();
       break;
     case 'view all roles':
       await displayAllRoles();
-      init();
+      app();
       break;
     case 'view all departments':
       await displayAllDepartments();
-      init();
+      app();
       break;
     case 'add employee':
       await addEmployee();
-      init();
+      app();
       break;
     case 'remove employee':
       await removeEmployee();
-      init();
+      app();
       break;
     case 'update employee manager':
       await updateEmployeeManager();
-      init();
+      app();
       break;
     case 'update employee role':
       await updateEmployeeRole();
-      init();
+      app();
       break;
     case 'update employee department':
       await updateEmployeeDepartment();
-      init();
+      app();
       break;
     case 'add department':
       await addDepartment();
-      init();
+      app();
       break;
     case 'remove department':
       await removeDepartment();
-      init();
+      app();
       break;
     case 'add role':
       await addRole();
-      init();
+      app();
       break;
     case 'remove role':
       await removeRole();
-      init();
+      app();
       break;
     case 'view total budget':
       await displayTotalBudget();
-      init();
+      app();
       break;
     case 'view total department budget':
       await displayTotalDepartmentBudget();
-      init();
+      app();
       break;
     case 'exit':
       console.log('Have a nice day!');
@@ -940,9 +956,17 @@ async function displayTotalDepartmentBudget() {
   }
 }
 
-resetDB();
-initDB();
+async function init() {
+  resetDB();
+  initDB();
+  const data = await displayBanner();
+  console.log(data);
+  console.log('\n')
+  await app();
+}
+
 init();
+
 
 
 

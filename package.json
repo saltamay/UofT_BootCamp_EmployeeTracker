@@ -19,6 +19,7 @@
   "homepage": "https://github.com/saltamay/UofT_BootCamp_EmployeeTracker#readme",
   "dependencies": {
     "console.table": "^0.10.0",
+    "figlet": "^1.2.4",
     "inquirer": "^7.0.0",
     "mysql": "^2.17.1"
   }
