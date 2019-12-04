@@ -295,8 +295,19 @@ function deleteDepartment(departmentName) {
       if (err) {
         reject(err);
       } else {
-        console.log('Success');
-        resolve();
+        resolve('Success');
+      }
+    });
+  });
+}
+
+function deleteRole(roleTitle) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.deleteFromRole(roleTitle), err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
       }
     });
   });
@@ -810,6 +821,32 @@ async function addRole() {
 
     role.departmentID = await getDepartmentID(role.department);
     await insertRole(role);
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+async function removeRole() {
+  try {
+    const roles = await getAllRoles();
+
+    let roleNames = [];
+    for (const role of roles) {
+      roleNames.push(role.Title);
+    }
+
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'title',
+          message: 'Which role would you like to remove? ',
+          choices: roleNames
+        }
+      ]);
+
+    await deleteRole(role.title);
 
   } catch (err) {
     if (err) throw err;

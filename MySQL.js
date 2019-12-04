@@ -101,6 +101,10 @@ class MySQL {
   insertIntoRole(role) {
     return `INSERT INTO role (title, salary, department_id) VALUES ("${role.title}", "${role.salary}", "${role.departmentID}")`
   }
+
+  deleteFromRole(roleTitle) {
+    return `DELETE FROM role WHERE title="${roleTitle}"`;
+  }
 }
 
 module.exports = MySQL;
