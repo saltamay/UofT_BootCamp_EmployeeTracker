@@ -127,7 +127,8 @@ async function init() {
           'Add Role',
           'Remove Role',
           'View Total Budget',
-          'View Total Department Budget'
+          'View Total Department Budget',
+          'Exit'
         ]
       }
     ]);
@@ -197,6 +198,9 @@ async function init() {
       await displayTotalDepartmentBudget();
       init();
       break;
+    case 'exit':
+      console.log('Have a nice day!');
+      db.end();
     default:
       break;
   }
