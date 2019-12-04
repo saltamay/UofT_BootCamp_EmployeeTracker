@@ -946,8 +946,7 @@ async function displayTotalDepartmentBudget() {
     if (totalDepartmentBudget[0]['Total Department Budget']) {
       totalDepartmentBudget[0]['Total Department Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalDepartmentBudget[0]['Total Department Budget']);
     } else {
-      totalDepartmentBudget[0]['Total Department Budget'] = 0;
-      totalDepartmentBudget[0]['Total Department Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalBudget[0]['Total Department Budget']);
+      totalDepartmentBudget[0]['Total Department Budget'] = `CA$0.00`;
     }
     console.log('');
     console.table(totalDepartmentBudget);
