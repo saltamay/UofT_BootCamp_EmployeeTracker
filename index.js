@@ -596,18 +596,19 @@ async function removeEmployee() {
     const managers = await getAllManagers();
 
     if (managers.includes(employee.name)) {
+
       const managerID = await getEmployeeID(employee.name);
       const employeesManaged = await getAllEmployeesByManager(managerID);
 
       for (let employeeManaged of employeesManaged) {
-        employeeManaged = employeeManaged['first_name'] + " " + employeeManaged['last_name'];
+        employeeManaged = employeeManaged['First Name'] + " " + employeeManaged['Last Name'];
         setEmployeeManager(employeeManaged);
       }
+
       deleteEmployee(employee.name);
     } else {
       deleteEmployee(employee.name);
     }
-
   } catch (err) {
     if (err) throw err;
   }
