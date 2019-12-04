@@ -97,6 +97,10 @@ class MySQL {
   deleteFromDepartment(departmentName) {
     return `DELETE FROM department WHERE name="${departmentName}"`;
   }
+
+  insertIntoRole(role) {
+    return `INSERT INTO role (title, salary, department_id) VALUES ("${role.title}", "${role.salary}", "${role.departmentID}")`
+  }
 }
 
 module.exports = MySQL;

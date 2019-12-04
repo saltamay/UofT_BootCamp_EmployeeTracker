@@ -179,6 +179,18 @@ async function init() {
       await removeDepartment();
       init();
       break;
+    case 'add role':
+      await addRole();
+      init();
+      break;
+    case 'remove role':
+      await removeRole();
+      init();
+      break;
+    case 'view total budget':
+      await displayTotalBudget();
+      init();
+      break;
     default:
       break;
   }
@@ -247,6 +259,18 @@ function insertDepartment(departmentName) {
       } else {
         console.log('Success');
         resolve();
+      }
+    });
+  });
+}
+
+function insertRole(role) {
+  return new Promise((resolve, reject) => {
+    db.query(sqlQuery.insertIntoRole(role), err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
       }
     });
   });
@@ -748,6 +772,44 @@ async function removeDepartment() {
       ]);
 
     await deleteDepartment(department.name);
+
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+async function addRole() {
+  try {
+
+    const departments = await getAllDepartments();
+
+    let departmentNames = [];
+    for (const department of departments) {
+      departmentNames.push(department.Name);
+    }
+
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'title',
+          message: 'Please enter the role that you would like to add: '
+        },
+        {
+          type: 'input',
+          name: 'salary',
+          message: 'Please enter the salary assigned for this role: '
+        },
+        {
+          type: 'list',
+          name: 'department',
+          message: 'To which department would you like to add this role? ',
+          choices: departmentNames
+        },
+      ]);
+
+    role.departmentID = await getDepartmentID(role.department);
+    await insertRole(role);
 
   } catch (err) {
     if (err) throw err;
