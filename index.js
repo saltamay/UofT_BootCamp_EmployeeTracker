@@ -6,6 +6,7 @@ const sqlQuery = new MySQL();
 
 const db = mysql.createConnection({
   host: 'localhost',
+  port: 3306,
   user: 'root',
   password: 'xExV2Rv3gjc7XC',
   database: 'employee_db',
@@ -488,6 +489,19 @@ function getAllEmployeesByManager(managerID) {
   })
 }
 
+function getTotalBudget() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT SUM(salary) AS 'Total Budget' FROM role, employee WHERE employee.role_id=role.id`;
+    db.query(query, (err, results, fields) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    })
+  })
+}
+
 async function addEmployee() {
 
   // Get the list of all titles
@@ -848,6 +862,17 @@ async function removeRole() {
 
     await deleteRole(role.title);
 
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+async function displayTotalBudget() {
+  try {
+    const totalBudget = await getTotalBudget();
+    totalBudget[0]['Total Budget'] = new Intl.NumberFormat('en-CAD', { style: 'currency', currency: 'CAD' }).format(totalBudget[0]['Total Budget'])
+    console.log('');
+    console.table(totalBudget);
   } catch (err) {
     if (err) throw err;
   }
