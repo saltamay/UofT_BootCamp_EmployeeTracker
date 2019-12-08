@@ -1,3 +1,4 @@
+const mysql = require('mysql');
 const cTable = require('console.table');
 const inquirer = require('inquirer');
 const MySQL = require('./MySQL');
@@ -9,97 +10,18 @@ const { getRoleID, insertRole, deleteRole, getAllRoles } = require('./controller
 const { getDepartmentID, insertDepartment, deleteDepartment, getAllDepartments } = require('./controllers/department');
 
 // Conect to employee_db database
-const db = database.createConnection();
+const db = mysql.createConnection({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'xExV2Rv3gjc7XC',
+  database: 'employee_db',
+  multipleStatements: true
+});
 
 db.connect(function (err) {
   if (err) throw err;
 });
-
-function resetDB() {
-  db.query(sqlQuery.dropEmployeeTable(), err => {
-    if (err) throw err
-  });
-
-  db.query(sqlQuery.dropRoleTable(), err => {
-    if (err) throw err
-  });
-
-  db.query(sqlQuery.dropDepartmentTable(), err => {
-    if (err) throw err
-  });
-
-  db.query(sqlQuery.createDepartmentTable(), err => {
-    if (err) throw err
-  });
-
-  db.query(sqlQuery.createRoleTable(), err => {
-    if (err) throw err
-  });
-
-  db.query(sqlQuery.createEmployeeTable(), err => {
-    if (err) throw err
-  });
-}
-
-function initDB() {
-
-  // Seed database
-  db.query("INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?);INSERT INTO department (name) VALUES (?)", ['Sales', 'Legal', 'Finance', 'Engineering'],
-    err => {
-      if (err) throw err;
-    }
-  );
-
-  // Seed role table
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Sales Lead', 100000, 1)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Salesperson', 80000, 1)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Lawyer', 190000, 2)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Legal Team Lead', 250000, 2)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Accountant', 125000, 3)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Software Engineer', 120000, 4)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO role (title, salary, department_id) VALUES ('Lead Software Engineer', 180000, 4)", err => {
-    if (err) throw err;
-  });
-
-  // Seed employees to test the functionality
-  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Leanne', 'Graham', 4)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('Ervin', 'Howell', 3, 1)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Clementine', 'Bauch', 1)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('Patricia', 'Lebsack', 2, 3)", err => {
-    if (err) throw err;
-  });
-
-  db.query("INSERT INTO employee (first_name, last_name, role_id) VALUES ('Chelsey', 'Dietrich', 5)", err => {
-    if (err) throw err;
-  });
-}
 
 function displayBanner() {
   return new Promise((resolve, reject) => {
@@ -676,8 +598,8 @@ async function displayTotalDepartmentBudget() {
 }
 
 async function init() {
-  resetDB();
-  initDB();
+  database.reset();
+  database.init();
   const data = await displayBanner();
   console.log(data);
   console.log('\n')

@@ -1,5 +1,14 @@
 const database = require('./database');
-const db = database.createConnection();
+const mysql = require('mysql');
+// Conect to employee_db database
+const db = mysql.createConnection({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'xExV2Rv3gjc7XC',
+  database: 'employee_db',
+  multipleStatements: true
+});
 
 const getDepartmentID = (departmentName) => {
   return new Promise((resolve, reject) => {

@@ -1,5 +1,13 @@
-const database = require('./database');
-const db = database.createConnection();
+const mysql = require('mysql');
+// Conect to employee_db database
+const db = mysql.createConnection({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'xExV2Rv3gjc7XC',
+  database: 'employee_db',
+  multipleStatements: true
+});
 
 getEmployeeID = (employeeName) => {
   if (employeeName === 'None') {
@@ -106,7 +114,7 @@ getAllEmployees = () => {
 const getManagerByID = (managerID) => {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM employee WHERE id = ?";
-    db.query(query, (err, results, fields) => {
+    db.query(query, [managerID], (err, results, fields) => {
       if (err) {
         reject(err);
       } else {
