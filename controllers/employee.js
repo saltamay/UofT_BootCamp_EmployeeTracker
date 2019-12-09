@@ -1,224 +1,255 @@
-const mysql = require('mysql');
-// Conect to employee_db database
-const db = mysql.createConnection({
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: 'xExV2Rv3gjc7XC',
-  database: 'employee_db',
-  multipleStatements: true
-});
+const inquirer = require('inquirer');
+const cTable = require('console.table');;
+const { getEmployeeID, insertEmployee, getAllEmployees, getManagerByID, getAllManagers, setEmployeeManager, deleteEmployee, getAllEmployeesDetails, getAllEmployeesByDepartment, getAllEmployeesByManager } = require('../models/employee');
+const { getAllTitles, getRoleID } = require('../models/role');
+const { getDepartmentID } = require('../models/department');
+const { getAllDepartmentNames } = require('./department');
 
-getEmployeeID = (employeeName) => {
-  if (employeeName === 'None') {
-    return null;
+/**
+ * @description Adds a new employee
+ */
+async function addEmployee() {
+  // Get all titles from the role table 
+  const titles = await getAllTitles();
+
+  // Get the list of employees from employee table
+  const employees = await getAllEmployees();
+  employees.unshift('None');
+
+  try {
+    const employee = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'firstName',
+          message: 'What is the employee\'s first name? '
+        },
+        {
+          type: 'input',
+          name: 'lastName',
+          message: 'What is the employee\'s last name? '
+        },
+        {
+          type: 'list',
+          name: 'title',
+          message: 'What is employee\'s role? ',
+          choices: titles
+        },
+        {
+          type: 'list',
+          name: 'manager',
+          message: 'Who is employee\'s manager ?',
+          choices: employees
+        }
+      ]);
+
+    employee.roleID = await getRoleID(employee.title);
+    employee.managerID = await getEmployeeID(employee.manager);
+
+    await insertEmployee(employee);
+  } catch (err) {
+    if (err) throw err;
   }
-  return new Promise((resolve, reject) => {
-    const firstName = employeeName.split(' ')[0];
-    const lastName = employeeName.split(' ')[1];
-    query = "SELECT id FROM employee WHERE first_name= ? AND last_name= ?";
-    db.query(query, [firstName, lastName], (err, results, fields) => {
-      if (err) {
-        console.log(err);
-        reject(err);
-      } else {
-        resolve(results[0].id);
-      }
-    });
-  });
 }
 
-insertEmployee = (employee) => {
-  return new Promise((resolve, reject) => {
-    db.query(sqlQuery.insertIntoEmployee(employee), err => {
-      if (err) {
-        reject(err);
-      } else {
-        console.log('Success');
-        resolve();
-      }
-    });
-  });
-}
+/**
+ * @description Removes an employee
+ */
+async function removeEmployee() {
+  try {
+    // Get the list of employees from employee table
+    const employees = await getAllEmployees();
 
-deleteEmployee = (employeeName) => {
-  return new Promise((resolve, reject) => {
-    const firstName = employeeName.split(' ')[0];
-    const lastName = employeeName.split(' ')[1];
-    query = "DELETE FROM employee WHERE first_name = ? AND last_name = ?"
-    db.query(query, [firstName, lastName], err => {
-      if (err) {
-        reject(err);
-      } else {
-        console.log('Success');
-        resolve();
-      }
-    });
-  });
-}
+    const employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Which employee would you like to remove ?',
+          choices: employees
+        }
+      ]);
 
-setEmployeeRole = (employeeName, role) => {
-  return new Promise((resolve, reject) => {
-    const firstName = employeeName.split(' ')[0];
-    const lastName = employeeName.split(' ')[1];
-    const query = "UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?"
-    db.query(query, [firstName, lastName, role.id], err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
-}
+    const managers = await getAllManagers();
 
-setEmployeeManager = (employee, manager = null) => {
-  return new Promise((resolve, reject) => {
-    const firstName = employee.split(' ')[0];
-    const lastName = employee.split(' ')[1];
-    let query = '';
-    if (manager) {
-      query = "UPDATE employee SET manager_id = ? WHERE first_name = ? AND last_name = ?";
+    if (managers.includes(employee.name)) {
+
+      const managerID = await getEmployeeID(employee.name);
+      const employeesManaged = await getAllEmployeesByManager(managerID);
+
+      for (let employeeManaged of employeesManaged) {
+        employeeManaged = employeeManaged['First Name'] + " " + employeeManaged['Last Name'];
+        setEmployeeManager(employeeManaged);
+      }
+
+      deleteEmployee(employee.name);
     } else {
-      query = "UPDATE employee SET manager_id = null WHERE first_name = ? AND last_name = ?";
+      deleteEmployee(employee.name);
     }
-    db.query(query, [firstName, lastName], (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-getAllEmployees = () => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee";
-    db.query(query, (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        const employees = [];
-        for (const employee of results) {
-          const firstName = employee['first_name'];
-          const lastName = employee['last_name'];
-          employees.push(`${firstName} ${lastName}`);
+/**
+ * @description Updates an employee's manager
+ */
+async function updateEmployeeManager() {
+  try {
+    // Get the list of employees
+    let employees = await getAllEmployees();
+
+    let employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee: ',
+          choices: employees
         }
-        resolve(employees);
-      }
-    });
-  });
-}
+      ]);
 
-const getManagerByID = (managerID) => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee WHERE id = ?";
-    db.query(query, [managerID], (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        const manager = `${results[0]['first_name']} ${results[0]['last_name']}`;
-        resolve(manager);
-      }
-    });
-  })
-}
+    employee = employee.name;
+    employees = employees.filter(el => el !== employee)
 
-getAllManagers = () => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee, manager WHERE employee.manager_id = manager.id";
-    db.query(query, (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        const managers = [];
-        for (const manager of results) {
-          const firstName = manager['first_name'];
-          const lastName = manager['last_name'];
-          managers.push(`${firstName} ${lastName}`);
+    const manager = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee to assign as the manager: ',
+          choices: employees
         }
-        resolve(managers);
-      }
-    });
-  });
+      ]);
+
+    manager.id = await getEmployeeID(manager.name);
+
+    await setEmployeeManager(employee, manager);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-getAllEmployeesDetails = () => {
-  return new Promise((resolve, reject) => {
-    const query =
-      `SELECT employee.id AS 'ID', 
-        first_name AS 'First Name', 
-        last_name AS 'Last Name', 
-        role.title AS 'Title', 
-        department.name AS 'Department', 
-        role.salary AS 'Salary', 
-        manager_id
-      FROM employee, role, department
-      WHERE employee.role_id = role.id
-        AND role.department_id = department.id
-      ORDER BY employee.id ASC`;
+/**
+ * @description Updates an employee's role
+ */
+async function updateEmployeeRole() {
+  try {
+    // Get the list of employees
+    let employees = await getAllEmployees();
 
-    db.query(query, (err, results, fields) => {
-      if (err) {
-        console.log(err);
-        reject(err);
-      } else {
-        resolve(results);
-      }
-    });
-  });
+    let employee = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select an employee: ',
+          choices: employees
+        }
+      ]);
+
+    const titles = await getAllTitles();
+
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'title',
+          message: 'Please select a role as the employee\'s new role: ',
+          choices: titles
+        }
+      ]);
+
+    await setEmployeeRole(employee.name, role);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-getAllEmployeesByDepartment = (departmentID) => {
-  return new Promise((resolve, reject) => {
-    const query =
-      `SELECT employee.id AS 'ID', 
-        first_name AS 'First Name', 
-        last_name AS 'Last Name'
-      FROM employee
-      WHERE employee.role_id = ANY (SELECT role.id FROM role WHERE role.department_id = ?)
-      ORDER BY employee.id ASC`;
-    db.query(query, [departmentID], (err, results, fields) => {
-      if (err) {
-        console.log(err);
-        reject(err);
+/**
+ * @description   Retrieves and displays all employees
+ */
+async function displayAllEmployees() {
+  try {
+    const employees = await getAllEmployeesDetails();
+
+    for (const employee of employees) {
+      if (employee['manager_id'] !== null) {
+        employee.Manager = await getManagerByID(employee['manager_id']);
+        delete employee['manager_id'];
       } else {
-        resolve(results);
+        employee.Manager = 'None';
+        delete employee['manager_id'];
       }
-    });
-  });
+    }
+
+    console.table(employees);
+  } catch (err) {
+    if (err) {
+      throw err;
+    }
+  }
 }
 
-getAllEmployeesByManager = (managerID) => {
-  return new Promise((resolve, reject) => {
-    const query =
-      `SELECT id AS 'ID', 
-        first_name AS 'First Name', 
-        last_name AS 'Last Name'
-      FROM employee WHERE employee.manager_id = ? 
-      ORDER BY employee.first_name ASC`;
-    db.query(query, [managerID], (err, results, fields) => {
-      if (err) {
-        console.log(err);
-        reject(err);
-      } else {
-        resolve(results);
-      }
-    });
-  });
+/**
+ * @description   Retrieves and displays all employees in a department
+ */
+async function displayAllEmployeesByDepartment() {
+  try {
+    const departmentNames = await getAllDepartmentNames();
+
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select a department ?',
+          choices: departmentNames
+        }
+      ]);
+
+    const departmentID = await getDepartmentID(department.name);
+
+    const employees = await getAllEmployeesByDepartment(departmentID);
+
+    console.table(employees);
+  } catch (err) {
+    if (err) throw err;
+  }
+}
+
+/**
+ * @description   Retrieves and displays all employees under a manager
+ */
+async function displayAllEmployeesByManager() {
+  try {
+    const managers = await getAllManagers();
+    const manager = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Please select a department ?',
+          choices: managers
+        }
+      ]);
+
+    const managerID = await getEmployeeID(manager.name);
+
+    const employeesManaged = await getAllEmployeesByManager(managerID);
+
+    console.table(employeesManaged);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
 module.exports = {
-  getEmployeeID,
-  insertEmployee,
-  deleteEmployee,
-  setEmployeeRole,
-  setEmployeeManager,
-  getAllEmployees,
-  getManagerByID,
-  getAllManagers,
-  getAllEmployeesDetails,
-  getAllEmployeesByDepartment,
-  getAllEmployeesByManager
+  addEmployee,
+  removeEmployee,
+  updateEmployeeManager,
+  updateEmployeeRole,
+  displayAllEmployees,
+  displayAllEmployeesByDepartment,
+  displayAllEmployeesByManager
 }

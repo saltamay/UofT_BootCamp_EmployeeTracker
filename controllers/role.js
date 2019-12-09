@@ -1,71 +1,99 @@
-const mysql = require('mysql');
-// Conect to employee_db database
-const db = mysql.createConnection({
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: 'xExV2Rv3gjc7XC',
-  database: 'employee_db',
-  multipleStatements: true
-});
+const { getAllDepartmentNames } = require('./department');
+const { getDepartmentID, getAllRoles } = require('../models/department');
 
-const getRoleID = (roleTitle) => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT id FROM role WHERE title = ?"
-    db.query(query, [roleTitle], (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results[0].id);
-      }
-    });
-  });
+/**
+ * @description   Adds a new role
+ */
+async function addRole() {
+  try {
+    const departmentNames = await getAllDepartmentNames()
+
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'title',
+          message: 'Please enter the role that you would like to add: '
+        },
+        {
+          type: 'input',
+          name: 'salary',
+          message: 'Please enter the salary assigned for this role: '
+        },
+        {
+          type: 'list',
+          name: 'department',
+          message: 'To which department would you like to add this role? ',
+          choices: departmentNames
+        },
+      ]);
+
+    role.departmentID = await getDepartmentID(role.department);
+    await insertRole(role);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const insertRole = (role) => {
-  return new Promise((resolve, reject) => {
-    const query =
-      `INSERT INTO role (title, salary, department_id)
-     VALUES (?, ?, ?)`;
-    db.query(query, [role.title, role.salary, role.departmentID], err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
+/**
+ * @description   Retrieves all roles
+ * @returns       Array object of role names
+ */
+async function getAllRoleNames() {
+  try {
+    const roles = await getAllRoles();
+
+    let roleNames = [];
+    for (const role of roles) {
+      roleNames.push(role.Title);
+    }
+
+    return roleNames;
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const deleteRole = (roleTitle) => {
-  return new Promise((resolve, reject) => {
-    const query = "DELETE FROM role WHERE title = ?";
-    db.query(query, [roleTitle], err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
+/**
+ * @description   Removes a role
+ */
+async function removeRole() {
+  try {
+    const roleNames = await getAllRoleNames;
+
+    const role = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'title',
+          message: 'Which role would you like to remove? ',
+          choices: roleNames
+        }
+      ]);
+
+    await deleteRole(role.title);
+
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const getAllRoles = () => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT id AS 'ID', title AS 'Title', salary AS 'Salary' FROM role";
-    db.query(query, (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results);
-      }
-    });
-  });
+/**
+ * @description   Retrieves and displays all roles
+ */
+async function displayAllRoles() {
+  try {
+    const roles = await getAllRoles();
+
+    console.table(roles);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
 module.exports = {
-  getRoleID,
-  insertRole,
-  deleteRole,
-  getAllRoles
+  addRole,
+  getAllRoleNames,
+  removeRole,
+  displayAllRoles
 }

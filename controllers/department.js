@@ -1,71 +1,84 @@
-const database = require('./database');
-const mysql = require('mysql');
-// Conect to employee_db database
-const db = mysql.createConnection({
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: 'xExV2Rv3gjc7XC',
-  database: 'employee_db',
-  multipleStatements: true
-});
+const { insertDepartment, getAllDepartments, deleteDepartment } = require('../models/department');
 
-const getDepartmentID = (departmentName) => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT id FROM department WHERE name = ?";
-    db.query(query, [departmentName], (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results[0].id);
-      }
-    });
-  });
+/**
+ * @description   Adds a new department
+ */
+async function addDepartment() {
+  try {
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'Enter the new department you would like to add '
+        }
+      ]);
+
+    await insertDepartment(department.name);
+
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const insertDepartment = (departmentName) => {
-  return new Promise((resolve, reject) => {
-    const query = "INSERT INTO department (name) VALUES (?)";
-    db.query(query, [departmentName], err => {
-      if (err) {
-        reject(err);
-      } else {
-        console.log('Success');
-        resolve();
-      }
-    });
-  });
+/**
+ * @description   Retrievess all depatment names
+ * @returns       An array object of department names
+ */
+async function getAllDepartmentNames() {
+  try {
+    const departments = await getAllDepartments();
+
+    let departmentNames = [];
+    for (const department of departments) {
+      departmentNames.push(department.Name);
+    }
+
+    return departmentNames;
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const deleteDepartment = (departmentName) => {
-  return new Promise((resolve, reject) => {
-    const query = "DELETE FROM department WHERE name = ?";
-    db.query(query, [departmentName], err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
+/**
+ * @description   Removes a department
+ */
+async function removeDepartment() {
+  try {
+    const departmentNames = await getAllDepartmentNames();
+
+    const department = await inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'name',
+          message: 'Which department would you like to remove? ',
+          choices: departmentNames
+        }
+      ]);
+
+    await deleteDepartment(department.name);
+
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
-const getAllDepartments = () => {
-  return new Promise((resolve, reject) => {
-    const query = "SELECT id AS 'ID', name AS 'Name' FROM department";
-    db.query(query, (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results);
-      }
-    });
-  });
+/**
+ * @description   Retrieves and displays all departments 
+ */
+async function displayAllDepartments() {
+  try {
+    const departments = await getAllDepartments();
+    console.table(departments);
+  } catch (err) {
+    if (err) throw err;
+  }
 }
 
 module.exports = {
-  getDepartmentID,
-  insertDepartment,
-  deleteDepartment,
-  getAllDepartments
+  addDepartment,
+  getAllDepartmentNames,
+  removeDepartment,
+  displayAllDepartments
 }
