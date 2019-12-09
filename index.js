@@ -2,7 +2,6 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const figlet = require('figlet');
 const database = require('./database');
-const { getDepartmentID, getAllDepartments } = require('./models/department');
 const { addEmployee, removeEmployee, updateEmployeeManager, updateEmployeeRole, displayAllEmployees, displayAllEmployeesByDepartment, displayAllEmployeesByManager } = require('./controllers/employee');
 const { addDepartment, removeDepartment, displayAllDepartments } = require('./controllers/department');
 const { addRole, removeRole, displayAllRoles } = require('./controllers/role');
@@ -20,9 +19,11 @@ const db = mysql.createConnection({
 
 db.connect(function (err) {
   if (err) throw err;
+
+  init();
 });
 
-function displayBanner() {
+function createBanner() {
   return new Promise((resolve, reject) => {
     figlet('Employee Manager', {
       horizontalLayout: 'default',
@@ -36,6 +37,19 @@ function displayBanner() {
       }
     });
   });
+}
+
+async function displayBanner() {
+  const data = await createBanner();
+  console.log(data);
+  console.log('\n');
+}
+
+async function init() {
+  database.reset();
+  database.init();
+  await displayBanner();
+  await app();
 }
 
 async function app() {
@@ -140,31 +154,8 @@ async function app() {
   }
 }
 
-function setEmployeeDepartment(employeeName, department) {
-  return new Promise((resolve, reject) => {
-    const firstName = employeeName.split(' ')[0];
-    const lastName = employeeName.split(' ')[1];
-    const query = `UPDATE employee SET id=${department.id} WHERE first_name="${firstName}" AND last_name="${lastName}"`;
-    db.query(query, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
-  });
-}
 
-async function init() {
-  database.reset();
-  database.init();
-  const data = await displayBanner();
-  console.log(data);
-  console.log('\n')
-  await app();
-}
 
-init();
 
 
 

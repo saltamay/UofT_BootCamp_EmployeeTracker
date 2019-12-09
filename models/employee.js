@@ -109,6 +109,21 @@ setEmployeeManager = (employee, manager = null) => {
   });
 }
 
+function setEmployeeDepartment(employeeName, department) {
+  return new Promise((resolve, reject) => {
+    const firstName = employeeName.split(' ')[0];
+    const lastName = employeeName.split(' ')[1];
+    const query = `UPDATE employee SET id = ? WHERE first_name = ? AND last_name = ?`;
+    db.query(query, [department.id, firstName, lastName], err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve('Success');
+      }
+    });
+  });
+}
+
 getAllEmployees = () => {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM employee";
@@ -231,6 +246,7 @@ module.exports = {
   insertEmployee,
   deleteEmployee,
   setEmployeeRole,
+  setEmployeeManager,
   setEmployeeManager,
   getAllEmployees,
   getManagerByID,
