@@ -10,17 +10,15 @@ const db = mysql.createConnection({
 });
 
 const database = {
-  dropEmployeeTable: "DROP TABLE IF EXISTS employee",
-  dropRoleTable: "DROP TABLE IF EXISTS role",
-  dropDepartmentTable: "DROP TABLE IF EXISTS department",
-  createDepartmentTable:
-    `CREATE TABLE IF NOT EXISTS department (
+  dropEmployeeTable: 'DROP TABLE IF EXISTS employee',
+  dropRoleTable: 'DROP TABLE IF EXISTS role',
+  dropDepartmentTable: 'DROP TABLE IF EXISTS department',
+  createDepartmentTable: `CREATE TABLE IF NOT EXISTS department (
     id INT AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
     PRIMARY KEY(id)
   )`,
-  createRoleTable:
-    `CREATE TABLE IF NOT EXISTS role (
+  createRoleTable: `CREATE TABLE IF NOT EXISTS role (
     id INT AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL,
     salary DECIMAL NOT NULL,
@@ -28,8 +26,7 @@ const database = {
     PRIMARY KEY(id),
     FOREIGN KEY(department_id) REFERENCES department(id)
   )`,
-  createEmployeeTable:
-    `CREATE TABLE IF NOT EXISTS employee(
+  createEmployeeTable: `CREATE TABLE IF NOT EXISTS employee(
     id INT AUTO_INCREMENT,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
@@ -39,32 +36,32 @@ const database = {
     FOREIGN KEY(role_id) REFERENCES role(id),
     FOREIGN KEY(manager_id) REFERENCES employee(id) 
   )`,
-  reset: function () {
+  reset: function() {
     db.query(this.dropEmployeeTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
 
     db.query(this.dropRoleTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
 
     db.query(this.dropDepartmentTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
 
     db.query(this.createDepartmentTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
 
     db.query(this.createRoleTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
 
     db.query(this.createEmployeeTable, err => {
-      if (err) throw err
+      if (err) throw err;
     });
   },
-  init: function () {
+  init: function() {
     // Seed department table
     db.query(
       `INSERT INTO department (name) 
@@ -116,8 +113,26 @@ const database = {
         }
       }
     );
+  },
+  dropAndInit: function() {
+    this.reset();
+    this.init();
+  },
+  dropAndEnd: function() {
+    db.query(this.dropEmployeeTable, err => {
+      if (err) throw err;
+    });
+
+    db.query(this.dropRoleTable, err => {
+      if (err) throw err;
+    });
+
+    db.query(this.dropDepartmentTable, err => {
+      if (err) throw err;
+    });
+
+    db.end();
   }
-}
+};
 
 module.exports = database;
-
