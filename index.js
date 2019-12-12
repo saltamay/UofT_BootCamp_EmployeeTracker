@@ -1,5 +1,4 @@
 const inquirer = require('inquirer');
-const figlet = require('figlet');
 const db = require('./database');
 const {
   addEmployee,
@@ -20,32 +19,7 @@ const {
   displayTotalBudget,
   displayTotalDepartmentBudget
 } = require('./controllers/budget');
-
-function createBanner() {
-  return new Promise((resolve, reject) => {
-    figlet(
-      'Employee Manager',
-      {
-        horizontalLayout: 'default',
-        verticalLayout: 'default'
-      },
-      function(err, data) {
-        if (err) {
-          console.log('Something went wrong...');
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      }
-    );
-  });
-}
-
-async function displayBanner() {
-  const data = await createBanner();
-  console.log(data);
-  console.log('\n');
-}
+const { displayBanner } = require('./utils/banner');
 
 async function init() {
   db.dropAndInit();
@@ -54,12 +28,12 @@ async function init() {
 }
 
 async function app() {
-  // Reset and initialize the db
+  console.log('\n');
   const answer = await inquirer.prompt([
     {
       type: 'list',
       name: 'action',
-      message: 'What would you like to do?',
+      message: 'Select an option?',
       choices: [
         'View All Employees',
         'View All Employees by Department',

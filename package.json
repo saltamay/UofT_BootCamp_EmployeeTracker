@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
+    "watch": "nodemon ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,9 +19,13 @@
   },
   "homepage": "https://github.com/saltamay/UofT_BootCamp_EmployeeTracker#readme",
   "dependencies": {
+    "cfonts": "^2.4.5",
     "console.table": "^0.10.0",
     "figlet": "^1.2.4",
     "inquirer": "^7.0.0",
     "mysql": "^2.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
   }
 }
