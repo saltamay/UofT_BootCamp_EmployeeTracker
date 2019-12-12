@@ -32,7 +32,7 @@ So that I can organize and plan my business.
 
 ```
 I want to tbe able to:
-  
+
   Add departments, roles, employees
 
   View departments, roles, employees
@@ -52,53 +52,53 @@ and also:
 
 ## Minimum Requirements
 
-* Functional application.
+- Functional application.
 
-* GitHub repository with a unique name and a README describing the project.
+- GitHub repository with a unique name and a README describing the project.
 
-* The command-line application should allow users to:
+- The command-line application should allow users to:
 
-  * Add departments, roles, employees
+  - Add departments, roles, employees
 
-  * View departments, roles, employees
+  - View departments, roles, employees
 
-  * Update employee roles
+  - Update employee roles
 
 ## Bonus
 
-* The command-line application should allow users to:
+- The command-line application should allow users to:
 
-  * Update employee managers
+  - Update employee managers
 
-  * View employees by manager
+  - View employees by manager
 
-  * Delete departments, roles, and employees
+  - Delete departments, roles, and employees
 
-  * View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+  - View the total utilized budget of a department -- ie the combined salaries of all employees in that department
 
 ## Development Strategy
 
 1. Design the following database schema containing three tables:
 
-* **department**:
+- **department**:
 
-  * **id** - INT PRIMARY KEY
-  * **name** - VARCHAR(30) to hold department name
+  - **id** - INT PRIMARY KEY
+  - **name** - VARCHAR(30) to hold department name
 
-* **role**:
+- **role**:
 
-  * **id** - INT PRIMARY KEY
-  * **title** -  VARCHAR(30) to hold role title
-  * **salary** -  DECIMAL to hold role salary
-  * **department_id** -  INT to hold reference to department role belongs to
+  - **id** - INT PRIMARY KEY
+  - **title** - VARCHAR(30) to hold role title
+  - **salary** - DECIMAL to hold role salary
+  - **department_id** - INT to hold reference to department role belongs to
 
-* **employee**:
+- **employee**:
 
-  * **id** - INT PRIMARY KEY
-  * **first_name** - VARCHAR(30) to hold employee first name
-  * **last_name** - VARCHAR(30) to hold employee last name
-  * **role_id** - INT to hold reference to role employee has
-  * **manager_id** - INT to hold reference to another employee that manager of the current employee. This field may be null if the employee has no manager
+  - **id** - INT PRIMARY KEY
+  - **first_name** - VARCHAR(30) to hold employee first name
+  - **last_name** - VARCHAR(30) to hold employee last name
+  - **role_id** - INT to hold reference to role employee has
+  - **manager_id** - INT to hold reference to another employee that manager of the current employee. This field may be null if the employee has no manager
 
 2. Include a `seed.js` file to pre-populate database.
 
@@ -132,8 +132,9 @@ npm start
 Start using 👌
 
 ## Built With
-* [Node.js](https://nodejs.org/en/docs/) -- JavaScript runtime
-* [Inquirer](https://www.npmjs.com/package/inquirer) -- Interactive CLI
+
+- [Node.js](https://nodejs.org/en/docs/) -- JavaScript runtime
+- [Inquirer](https://www.npmjs.com/package/inquirer) -- Interactive CLI
 
 ## Demo
 
@@ -143,13 +144,6 @@ Start using 👌
 
 You are required to submit the following:
 
-* An animated GIF demonstrating the app functionality
+- An animated GIF demonstrating the app functionality
 
-* A generated PDF of your GitHub profile
-
-* The URL of the GitHub repository
-
-
-
-
-
+- The URL of the GitHub repository

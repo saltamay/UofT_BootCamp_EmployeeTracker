@@ -9,14 +9,14 @@ const db = mysql.createConnection({
   multipleStatements: true
 });
 
-getEmployeeID = (employeeName) => {
+getEmployeeID = employeeName => {
   if (employeeName === 'None') {
     return null;
   }
   return new Promise((resolve, reject) => {
     const firstName = employeeName.split(' ')[0];
     const lastName = employeeName.split(' ')[1];
-    query = "SELECT id FROM employee WHERE first_name= ? AND last_name= ?";
+    query = 'SELECT id FROM employee WHERE first_name= ? AND last_name= ?';
     db.query(query, [firstName, lastName], (err, results, fields) => {
       if (err) {
         console.log(err);
@@ -26,13 +26,20 @@ getEmployeeID = (employeeName) => {
       }
     });
   });
-}
+};
 
-insertEmployee = (employee) => {
+insertEmployee = employee => {
   return new Promise((resolve, reject) => {
     if (employee.managerID) {
       const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)`;
-      db.query(query, [employee.firstName, employee.lastName, employee.roleID, employee.managerID],
+      db.query(
+        query,
+        [
+          employee.firstName,
+          employee.lastName,
+          employee.roleID,
+          employee.managerID
+        ],
         err => {
           if (err) {
             reject(err);
@@ -44,7 +51,9 @@ insertEmployee = (employee) => {
       );
     } else {
       const query = `INSERT INTO employee (first_name, last_name, role_id) VALUES(?, ?, ?)`;
-      db.query(query, [employee.firstName, employee.lastName, employee.roleID],
+      db.query(
+        query,
+        [employee.firstName, employee.lastName, employee.roleID],
         err => {
           if (err) {
             reject(err);
@@ -56,13 +65,13 @@ insertEmployee = (employee) => {
       );
     }
   });
-}
+};
 
-deleteEmployee = (employeeName) => {
+deleteEmployee = employeeName => {
   return new Promise((resolve, reject) => {
     const firstName = employeeName.split(' ')[0];
     const lastName = employeeName.split(' ')[1];
-    query = "DELETE FROM employee WHERE first_name = ? AND last_name = ?"
+    query = 'DELETE FROM employee WHERE first_name = ? AND last_name = ?';
     db.query(query, [firstName, lastName], err => {
       if (err) {
         reject(err);
@@ -72,13 +81,14 @@ deleteEmployee = (employeeName) => {
       }
     });
   });
-}
+};
 
 setEmployeeRole = (employeeName, role) => {
   return new Promise((resolve, reject) => {
     const firstName = employeeName.split(' ')[0];
     const lastName = employeeName.split(' ')[1];
-    const query = "UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?"
+    const query =
+      'UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?';
     db.query(query, [firstName, lastName, role.id], err => {
       if (err) {
         reject(err);
@@ -87,27 +97,41 @@ setEmployeeRole = (employeeName, role) => {
       }
     });
   });
-}
+};
 
-setEmployeeManager = (employee, manager = null) => {
+setEmployeeManager = (employee, managerID = null) => {
   return new Promise((resolve, reject) => {
     const firstName = employee.split(' ')[0];
     const lastName = employee.split(' ')[1];
     let query = '';
-    if (manager) {
-      query = "UPDATE employee SET manager_id = ? WHERE first_name = ? AND last_name = ?";
+    if (managerID) {
+      query =
+        'UPDATE employee SET manager_id = ? WHERE first_name = ? AND last_name = ?';
+      db.query(
+        query,
+        [managerID, firstName, lastName],
+        (err, results, fields) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          } else {
+            resolve('Success');
+          }
+        }
+      );
     } else {
-      query = "UPDATE employee SET manager_id = null WHERE first_name = ? AND last_name = ?";
+      query =
+        'UPDATE employee SET manager_id = null WHERE first_name = ? AND last_name = ?';
+      db.query(query, [firstName, lastName], (err, results, fields) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve('Success');
+        }
+      });
     }
-    db.query(query, [firstName, lastName], (err, results, fields) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve('Success');
-      }
-    });
   });
-}
+};
 
 function setEmployeeDepartment(employeeName, department) {
   return new Promise((resolve, reject) => {
@@ -126,7 +150,7 @@ function setEmployeeDepartment(employeeName, department) {
 
 getAllEmployees = () => {
   return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee";
+    const query = 'SELECT * FROM employee';
     db.query(query, (err, results, fields) => {
       if (err) {
         reject(err);
@@ -141,11 +165,11 @@ getAllEmployees = () => {
       }
     });
   });
-}
+};
 
-const getManagerByID = (managerID) => {
+const getManagerByID = managerID => {
   return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee WHERE id = ?";
+    const query = 'SELECT * FROM employee WHERE id = ?';
     db.query(query, [managerID], (err, results, fields) => {
       if (err) {
         reject(err);
@@ -154,12 +178,13 @@ const getManagerByID = (managerID) => {
         resolve(manager);
       }
     });
-  })
-}
+  });
+};
 
 getAllManagers = () => {
   return new Promise((resolve, reject) => {
-    const query = "SELECT * FROM employee, employee manager WHERE employee.manager_id = manager.id";
+    const query =
+      'SELECT * FROM employee, employee manager WHERE employee.manager_id = manager.id';
     db.query(query, (err, results, fields) => {
       if (err) {
         reject(err);
@@ -174,12 +199,11 @@ getAllManagers = () => {
       }
     });
   });
-}
+};
 
 getAllEmployeesDetails = () => {
   return new Promise((resolve, reject) => {
-    const query =
-      `SELECT employee.id AS 'ID', 
+    const query = `SELECT employee.id AS 'ID', 
         first_name AS 'First Name', 
         last_name AS 'Last Name', 
         role.title AS 'Title', 
@@ -200,12 +224,11 @@ getAllEmployeesDetails = () => {
       }
     });
   });
-}
+};
 
-getAllEmployeesByDepartment = (departmentID) => {
+getAllEmployeesByDepartment = departmentID => {
   return new Promise((resolve, reject) => {
-    const query =
-      `SELECT employee.id AS 'ID', 
+    const query = `SELECT employee.id AS 'ID', 
         first_name AS 'First Name', 
         last_name AS 'Last Name'
       FROM employee
@@ -220,12 +243,11 @@ getAllEmployeesByDepartment = (departmentID) => {
       }
     });
   });
-}
+};
 
-getAllEmployeesByManager = (managerID) => {
+getAllEmployeesByManager = managerID => {
   return new Promise((resolve, reject) => {
-    const query =
-      `SELECT id AS 'ID', 
+    const query = `SELECT id AS 'ID', 
         first_name AS 'First Name', 
         last_name AS 'Last Name'
       FROM employee WHERE employee.manager_id = ? 
@@ -239,7 +261,7 @@ getAllEmployeesByManager = (managerID) => {
       }
     });
   });
-}
+};
 
 module.exports = {
   getEmployeeID,
@@ -247,11 +269,11 @@ module.exports = {
   deleteEmployee,
   setEmployeeRole,
   setEmployeeManager,
-  setEmployeeManager,
+  setEmployeeDepartment,
   getAllEmployees,
   getManagerByID,
   getAllManagers,
   getAllEmployeesDetails,
   getAllEmployeesByDepartment,
   getAllEmployeesByManager
-}
+};

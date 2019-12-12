@@ -132,7 +132,7 @@ async function updateEmployeeManager() {
 
     manager.id = await getEmployeeID(manager.name);
 
-    await setEmployeeManager(employee, manager);
+    await setEmployeeManager(employee, manager.id);
   } catch (err) {
     if (err) throw err;
   }
